@@ -10,8 +10,8 @@ import uuid
 import os
 from flask import Flask, request, jsonify
 
-processor = Wav2Vec2Processor.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi")
-model = Wav2Vec2ForCTC.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi")
+processor = Wav2Vec2Processor.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi-v2")
+model = Wav2Vec2ForCTC.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi-v2")
 
 
 def record(duration=5, fs=16000):
