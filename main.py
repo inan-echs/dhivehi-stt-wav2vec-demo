@@ -8,6 +8,10 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import uuid
 import os
+from flask import Flask, request, jsonify
+
+processor = Wav2Vec2Processor.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi")
+model = Wav2Vec2ForCTC.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi")
 
 
 def record(duration=5, fs=16000):
@@ -52,9 +56,6 @@ def create_spectrogram(voice_sample):
 def transcribe(uploaded_file):
     model_load_state = st.text("Loading pretrained models...")
 
-    processor = Wav2Vec2Processor.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi")
-    model = Wav2Vec2ForCTC.from_pretrained("shahukareem/wav2vec2-large-xlsr-53-dhivehi")
-
     model_load_state.text("Loaded pretrained models!")
     audio_input = uploaded_file
 
@@ -67,6 +68,34 @@ def transcribe(uploaded_file):
     st.write(transcription)
     return transcription
 
+def run_app(uploaded_file):
+    audio_bytes = uploaded_file.read()
+
+    # path_myrecording = f"files/{uploaded_file.name}"
+    path_myrecording = f"{uploaded_file.name}"
+
+    with open(os.path.join(uploaded_file.name), "wb") as f:
+        f.write(uploaded_file.getbuffer())
+
+    y, sr = librosa.load(path_myrecording)
+    transcription = transcribe(y)
+
+    os.remove(path_myrecording)
+
+    return transcription
+
+
+app = Flask(__name__)
+
+@app.route('/transcribe', methods=['POST'])
+def transcribe_audio():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file found in request'}), 400
+
+    audio_file = request.files['file']
+    transcription = run_app(audio_file)
+
+    return jsonify({'transcription': transcription}), 200
 
 def main():
     st.title("Dhivehi speech to text using wav2vec demo")
